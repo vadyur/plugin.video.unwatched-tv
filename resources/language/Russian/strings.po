@@ -1,0 +1,27 @@
+# Kodi Media Center language file
+# Addon Name: Unwatched TV
+# Addon id: plugin.video.unwatched-tv
+# Addon Provider: -=Vd=-
+#
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "moveto"
+msgstr "Переместить в"
+
+msgctxt "#30001"
+msgid "all"
+msgstr "Все"
+
+msgctxt "#30002"
+msgid "wish"
+msgstr "Желаемое"
+
+msgctxt "#30003"
+msgid "junk"
+msgstr "Больше не буду"
+
+msgctxt "#30004"
+msgid "Remove from"
+msgstr "Удалить из"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.unwatched-tv" version="0.1+matrix" name="Unwatched-TV" provider-name="-=Vd=-">
+<addon id="plugin.video.unwatched-tv" version="0.1+matrix" name="Unwatched-TV Library" provider-name="-=Vd=-">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
     <import addon="script.module.simpleplugin3"/>
@@ -12,11 +12,11 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary lang="en"></summary>
-    <summary lang="ru"></summary>
-    <description lang="en"></description>
-    <description lang="ru"></description>
-	
+    <summary lang="en">Unwatched TVShows</summary>
+    <summary lang="ru">Непросмотренные сериалы</summary>
+    <description lang="en">The plugin allows you to see which TV series from the media library have released new seasons/episodes.</description>
+    <description lang="ru">Плагин позволяет для каких сериалов из медиатеки вышли новые сезоны/серии</description>
+	<language>en, ru</language>	
 <!--     <assets>
       <icon>icon512.png</icon>
       <fanart>fanart.jpg</fanart>
