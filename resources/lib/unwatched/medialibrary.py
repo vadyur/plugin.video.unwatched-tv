@@ -1,4 +1,6 @@
 from datetime import datetime as dt
+import time
+
 from typing import Any, Dict, Iterable, List, Optional     #, Protocol
 
 from .SeasonItem import SeasonItem
@@ -59,10 +61,16 @@ def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
                          watched_count=season["watchedepisodes"],
                          seasonid=season["seasonid"])
 
+def strptime(string_date, format="%Y-%m-%d"):
+  try:
+      return dt.strptime(string_date, format)
+  except TypeError:
+      return dt(*(time.strptime(string_date, format)[0:6]))
+
 
 def is_aired(date: str) -> bool:
     try:
-        aired = dt.strptime(date, "%Y-%m-%d")
+        aired = strptime(date, "%Y-%m-%d")
         now = dt.now()
         return aired < now
     except TypeError:
