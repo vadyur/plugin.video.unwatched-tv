@@ -16,8 +16,7 @@ debug("=============== enter ================")
 
 @plugin.action()
 def root(params):
-    import vsdbg
-    vsdbg.breakpoint()
+    #import vsdbg; vsdbg.breakpoint()
 
     listing = [
         {'label': _('All'), 'url': plugin.get_url(action='all'), },
@@ -40,9 +39,11 @@ def listing_tvshow(type: OptsTypes, uw: Unwatched, context_menu=None):
 
         context_menu_out = []
         for ctx_item in context_menu:
-            target = ctx_item[1]
+            target: OptsTypes = ctx_item[1]
             action = "removefrom" if unwatched_opts.is_in(target, tvshowid) else "moveto"
-            menu_label = ctx_item[0] % action
+            what = _("Move to") if action == "moveto" else _("Remove from")
+            where = _("Wish") if target == OptsTypes.WISH else _("Junk")
+            menu_label = f'{what} "{where}"'
             command = "RunPlugin(%s)" % plugin.get_url(action=action, tvshowid=tvshowid, target=target)
             context_menu_out.append( (menu_label, command) )
         item['context_menu'] = context_menu_out

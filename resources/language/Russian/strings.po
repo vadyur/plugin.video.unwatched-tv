@@ -6,22 +6,27 @@
 msgid ""
 msgstr ""
 
+# Settings
 msgctxt "#30000"
-msgid "moveto"
+msgid "Основные"
+msgstr ""
+
+msgctxt "#33000"
+msgid "Move to"
 msgstr "Переместить в"
 
-msgctxt "#30001"
-msgid "all"
+msgctxt "#33001"
+msgid "All"
 msgstr "Все"
 
-msgctxt "#30002"
-msgid "wish"
+msgctxt "#33002"
+msgid "Wish"
 msgstr "Желаемое"
 
-msgctxt "#30003"
-msgid "junk"
+msgctxt "#33003"
+msgid "Junk"
 msgstr "Больше не буду"
 
-msgctxt "#30004"
+msgctxt "#33004"
 msgid "Remove from"
 msgstr "Удалить из"

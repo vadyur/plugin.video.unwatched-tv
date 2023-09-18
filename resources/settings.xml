@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="Основные">
+    <category label="30000">
+		<setting label="+++" type="lsep"/>	
     </category>
 </settings>
