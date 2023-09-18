@@ -28,8 +28,8 @@ def root(params):
 #@plugin.mem_cached(30)
 def listing_tvshow(type: OptsTypes, uw: Unwatched, context_menu=None):
     context_menu = [
-        ("%s to WISH", OptsTypes.WISH),
-        ("%s to JUNK", OptsTypes.JUNK)
+        OptsTypes.WISH,
+        OptsTypes.JUNK
     ]
 
     listing = list(uw.getTVShowListing(type))
@@ -39,7 +39,7 @@ def listing_tvshow(type: OptsTypes, uw: Unwatched, context_menu=None):
 
         context_menu_out = []
         for ctx_item in context_menu:
-            target: OptsTypes = ctx_item[1]
+            target: OptsTypes = ctx_item
             action = "removefrom" if unwatched_opts.is_in(target, tvshowid) else "moveto"
             what = _("Move to") if action == "moveto" else _("Remove from")
             where = _("Wish") if target == OptsTypes.WISH else _("Junk")
