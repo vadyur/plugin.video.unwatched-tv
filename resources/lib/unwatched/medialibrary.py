@@ -29,7 +29,7 @@ def get_tvshows() -> Iterable[TVShowItem]:
 
 
 def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
-    result = VideoLibrary.GetTVShowDetails(
+    result: Any = VideoLibrary.GetTVShowDetails(
                 tvshowid=tvshow_id, properties=[
                     "title",
                     "genre",
@@ -44,7 +44,7 @@ def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
                     "originaltitle",
                     "sorttitle",
                     "runtime"])
-    return result.get('tvshowdetails')
+    return result.get('tvshowdetails', {})
 
 
 def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
@@ -97,7 +97,7 @@ class Unwatched(object):
 
     def process_tmdb(self, tvshow: TVShowItem):
         tmdb_data: TMDB_API = get_tvshow_from_tmdb(tvshow.tmdb)
-        seasons = tmdb_data.tmdb_data["seasons"]
+        seasons: Any = tmdb_data.tmdb_data["seasons"]
         filtered_seasons = list(filter(lambda season: is_aired(season["air_date"]) and season["season_number"] != 0, seasons))
         if len(filtered_seasons) > len(tvshow.seasons):
             out_seasons: list[SeasonItem] = []
@@ -115,7 +115,7 @@ class Unwatched(object):
 
         tvshow.seasons = tmdb_seasons
 
-    def getTVShowListing(self, type: OptsTypes = "all") -> Iterable[dict]:
+    def getTVShowListing(self, type: OptsTypes = OptsTypes.ALL) -> Iterable[dict]:
         for tvshow in self.tvshows:
             if type == OptsTypes.WISH and not self.opts.is_in_wish(tvshow.tvshowid): continue
             if type == OptsTypes.JUNK and not self.opts.is_in_junk(tvshow.tvshowid): continue

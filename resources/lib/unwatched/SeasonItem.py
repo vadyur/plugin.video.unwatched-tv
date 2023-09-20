@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 
 
 @dataclass
@@ -9,7 +9,7 @@ class SeasonItem:
     watched_count: int    # count of watched episodes
     seasonid: Optional[int] = None
 
-    def merge(self, season: any):
+    def merge(self, season: Any):
         assert self.season_number == season.season_number
         self.episode_count = max(self.episode_count, season.episode_count)
         self.watched_count = max(self.watched_count, season.watched_count)
