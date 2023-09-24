@@ -30,3 +30,7 @@ msgstr "Больше не буду"
 msgctxt "#33004"
 msgid "Remove from"
 msgstr "Удалить из"
+
+msgctxt "#33005"
+msgid "Suggestions"
+msgstr "Предложения"

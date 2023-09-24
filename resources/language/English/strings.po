@@ -30,3 +30,7 @@ msgstr ""
 msgctxt "#33004"
 msgid "Remove from"
 msgstr ""
+
+msgctxt "#33005"
+msgid "Suggestions"
+msgstr ""
