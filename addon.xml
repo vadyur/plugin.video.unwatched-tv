@@ -15,8 +15,8 @@
     <summary lang="en">Unwatched TVShows</summary>
     <summary lang="ru">Непросмотренные сериалы</summary>
     <description lang="en">The plugin allows you to see which TV series from the media library have released new seasons/episodes.</description>
-    <description lang="ru">Плагин позволяет для каких сериалов из медиатеки вышли новые сезоны/серии</description>
-	<language>en, ru</language>	
+    <description lang="ru">Плагин позволяет узнать для каких сериалов из медиатеки вышли новые сезоны/серии</description>
+	<language>en, ru</language>
 <!--     <assets>
       <icon>icon512.png</icon>
       <fanart>fanart.jpg</fanart>

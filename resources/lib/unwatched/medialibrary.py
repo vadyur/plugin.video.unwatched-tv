@@ -2,7 +2,7 @@ from datetime import datetime as dt
 from enum import Enum
 import time
 
-from typing import Any, Dict, Iterable, List, Optional  # , Protocol
+from typing import Any, Callable, Dict, Iterable, List, Optional  # , Protocol
 
 from .SeasonItem import SeasonItem
 from .TVShowItem import TVShowItem
@@ -56,7 +56,7 @@ def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
 def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
     result = VideoLibrary.GetSeasons(
         tvshowid=tvshow_id,
-        properties=["season", "watchedepisodes", "episode", "showtitle"],
+        properties=["season", "watchedepisodes", "episode", "showtitle", "art"],
     )
 
     for season in result["seasons"]:
@@ -65,6 +65,7 @@ def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
             season_number=season["season"],
             watched_count=season["watchedepisodes"],
             seasonid=season["seasonid"],
+            poster=season["art"]["poster"],
         )
 
 
@@ -120,11 +121,14 @@ class Unwatched(object):
         if len(filtered_seasons) > len(tvshow.seasons):
             out_seasons: list[SeasonItem] = []
             for season in filtered_seasons:
+                poster_path = season["poster_path"]
                 out_seasons.append(
                     SeasonItem(
                         episode_count=season["episode_count"],
                         season_number=season["season_number"],
                         watched_count=0,
+                        overview=season["overview"],
+                        poster=f"https://image.tmdb.org/t/p/original{poster_path}",
                     )
                 )
             self.merge_seasons(tvshow, out_seasons)
@@ -138,7 +142,10 @@ class Unwatched(object):
         tvshow.seasons = tmdb_seasons
 
     def getTVShowListing(
-        self, type: OptsTypes = OptsTypes.ALL, opts: TVShowOpts = TVShowOpts.ALL
+        self,
+        type: OptsTypes = OptsTypes.ALL,
+        opts: TVShowOpts = TVShowOpts.ALL,
+        progressFn: Optional[Callable] = None
     ) -> Iterable[dict]:
         for tvshow in self.tvshows:
             if type == OptsTypes.WISH and not self.opts.is_in_wish(tvshow.tvshowid):
@@ -155,11 +162,17 @@ class Unwatched(object):
             video_info = get_tvshow_details(tvshow.tvshowid)
             video_info["playcount"] = int(tvshow.watched)
 
-            default_icon = 'image://DefaultFolder.png/'
+            default_icon = "image://DefaultFolder.png/"
             icon = default_icon
-            if (opts == TVShowOpts.SUGGESTIONS and tvshow.art.get("icon") == default_icon):
-                icon = tvshow.art.get("clearart", default_icon)
+            if (
+                opts == TVShowOpts.SUGGESTIONS
+                and tvshow.art.get("icon") == default_icon
+            ):
+                icon = tvshow.art.get("poster", default_icon)
                 tvshow.art["icon"] = icon
+
+            if (progressFn):
+                progressFn(tvshow.label)
 
             yield {
                 "label": tvshow.label,
@@ -175,9 +188,17 @@ class Unwatched(object):
         if tvshow:
             self.process_tmdb(tvshow)
             for season in tvshow.seasons:
+                art = tvshow.art.copy()
+                if season.poster:
+                    art.update({"poster": season.poster})
                 yield {
                     "label": f"Сезон {season.season_number}",
-                    "info": {"video": {"playcount": int(season.watched)}},
-                    "art": tvshow.art,
+                    "info": {
+                        "video": {
+                            "playcount": int(season.watched),
+                            "plot": season.overview,
+                        }
+                    },
+                    "art": art,
                     "url": season.seasonid,
                 }

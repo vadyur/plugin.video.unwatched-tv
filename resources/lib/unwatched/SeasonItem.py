@@ -8,6 +8,8 @@ class SeasonItem:
     season_number: int    # season number
     watched_count: int    # count of watched episodes
     seasonid: Optional[int] = None
+    overview: str = ''
+    poster: str = ''
 
     def merge(self, season: Any):
         assert self.season_number == season.season_number
@@ -15,6 +17,10 @@ class SeasonItem:
         self.watched_count = max(self.watched_count, season.watched_count)
         if season.seasonid:
             self.seasonid = season.seasonid
+        if (season.overview):
+            self.overview = season.overview
+        if (season.poster):
+            self.poster = season.poster
 
     @property
     def watched(self) -> bool:

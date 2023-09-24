@@ -1,5 +1,5 @@
 import sys
-import xbmcplugin
+import xbmcplugin, xbmcgui
 from simpleplugin import Plugin
 
 from .unwatched.UnwatchedOpts import OptsTypes
@@ -43,8 +43,13 @@ def root(params):
 # @plugin.mem_cached(30)
 def listing_tvshow(type: OptsTypes, uw: Unwatched, opts: TVShowOpts = TVShowOpts.ALL):
     context_menu = [OptsTypes.WISH, OptsTypes.JUNK]
+    progressDlg = xbmcgui.DialogProgressBG()
+    progressDlg.create(plugin.name)
 
-    listing = list(uw.getTVShowListing(type, opts))
+    def update(label: str):
+        progressDlg.update(message=label)
+
+    listing = list(uw.getTVShowListing(type, opts, progressFn=update))
     for item in listing:
         tvshowid = int(item["url"])
         item["url"] = plugin.get_url(action="seasons", tvshowid=tvshowid)
