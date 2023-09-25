@@ -179,8 +179,7 @@ def listing_episodes(tvshowid: str, season_number: str, **kvargs):
 @plugin.action()
 def episodes(params):
     debug(params)
-    xbmcplugin.setContent(int(sys.argv[1]), "episodes")
-    create_listing(listing_episodes(**params))
+    create_listing(listing_episodes(**params), content="episodes")
 
 
 @plugin.action()

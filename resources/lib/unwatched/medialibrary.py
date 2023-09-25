@@ -225,14 +225,18 @@ class Unwatched(object):
 
             episodes = get_episodes_from_tmdb(tvshow.tmdb, season_number=season_number)
             for episode in episodes:
-                video_info = show_video_info.copy()
-
                 art = tvshow.art.copy()
-                art["thumb"] = f"https://image.tmdb.org/t/p/w1280{episode['still_path']}"
-                art["icon"] = art["thumb"]
-                art["landscape"] = art["thumb"]
+                thumb = f"https://image.tmdb.org/t/p/w780{episode['still_path']}"
+                art.update({
+                    "icon": thumb,
+                    "thumb": thumb,
+                    "landscape": thumb,
+                    "poster": thumb
+                })
 
+                video_info = show_video_info.copy()
                 video_info.update({
+                    "file": "",
                     "plot": episode["overview"],
                     "firstaired": episode["air_date"],
                     "label": episode["name"],
@@ -251,6 +255,12 @@ class Unwatched(object):
                         "video": video_info
                     },
                     "art": art,
+                    'stream_info': {
+                        "video": {
+                            "duration": episode["runtime"] * 60
+                        }
+                    },
                     "url": episode,
-                    'is_folder': False
+                    'is_folder': False,
+                    'is_playable': True
                 }
