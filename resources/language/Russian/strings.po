@@ -34,3 +34,7 @@ msgstr "Удалить из"
 msgctxt "#33005"
 msgid "Suggestions"
 msgstr "Предложения"
+
+msgctxt "#33006"
+msgid "Episode S{}E{} isn't in media library"
+msgstr "Эпизод S{}E{} не в медиа библиотеке"

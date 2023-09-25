@@ -1,9 +1,11 @@
 import sys
+from vdlib.scrappers.movieapi import TMDB_Episode
 import xbmcplugin, xbmcgui
 from simpleplugin import Plugin
 
 from .unwatched.UnwatchedOpts import OptsTypes
 from .unwatched.medialibrary import TVShowOpts, Unwatched, UnwatchedOpts
+from .unwatched.SeasonItem import SeasonItem
 
 from vdlib.kodi.simpleplugin3_suport import create_listing
 from vdlib.util.log import debug
@@ -143,7 +145,12 @@ def listing_seasons(tvshowid: int):
     debug(tvshowid)
     listing = list(uw.getSeasonsListing(tvshowid))
     for item in listing:
-        item["url"] = plugin.get_url(action="episodes", seasonid=item["url"])
+        season: SeasonItem = item["url"]
+        seasonid = season.seasonid
+        if seasonid:
+            item["url"] = f"videodb://tvshows/titles/{tvshowid}/{season.season_number}/?tvshowid={tvshowid}"
+        else:
+            item["url"] = plugin.get_url(action="episodes", tvshowid=tvshowid, season_number=season.season_number)
     return listing
 
 
@@ -152,6 +159,34 @@ def seasons(params):
     debug(params)
     xbmcplugin.setContent(int(sys.argv[1]), "tvshows")
     create_listing(listing_seasons(int(params["tvshowid"])))
+
+
+def listing_episodes(tvshowid: str, season_number: str, **kvargs):
+    debug(f"listing_episodes({tvshowid}, {season_number})")
+
+    # import vsdbg; vsdbg.breakpoint()
+
+    uw = Unwatched(unwatched_opts)
+    listing = list(uw.getEpisodesListing(int(tvshowid), int(season_number)))
+    debug(f"listing_episodes:\t{listing}")
+
+    for item in listing:
+        episode: TMDB_Episode = item["url"]
+        item["url"] = plugin.get_url(action="episode", season_number=season_number, episode_number=episode["episode_number"])
+    return listing
+
+
+@plugin.action()
+def episodes(params):
+    debug(params)
+    xbmcplugin.setContent(int(sys.argv[1]), "episodes")
+    create_listing(listing_episodes(**params))
+
+
+@plugin.action()
+def episode(params):
+    xbmcgui.Dialog().ok(plugin.name, _("Episode S{}E{} isn't in media library")
+                        .format(params['season_number'], params['episode_number']))
 
 
 def main():

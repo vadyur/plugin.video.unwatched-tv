@@ -25,3 +25,7 @@ class SeasonItem:
     @property
     def watched(self) -> bool:
         return self.watched_count >= self.episode_count
+
+    @property
+    def watching(self) -> bool:
+        return self.watched_count > 0 and self.watched_count < self.episode_count

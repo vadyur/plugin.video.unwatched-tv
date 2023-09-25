@@ -23,3 +23,10 @@ class TVShowItem:
             if not season.watched:
                 return False
         return True
+
+    @property
+    def watching(self) -> bool:
+        for season in self.seasons:
+            if not season.watching:
+                return False
+        return True
