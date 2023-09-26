@@ -17,15 +17,8 @@
     <description lang="en">The plugin allows you to see which TV series from the media library have released new seasons/episodes.</description>
     <description lang="ru">Плагин позволяет узнать для каких сериалов из медиатеки вышли новые сезоны/серии</description>
 	<language>en, ru</language>
-<!--     <assets>
-      <icon>icon512.png</icon>
-      <fanart>fanart.jpg</fanart>
-      <screenshot>resources/screenshot-01.jpg</screenshot>
-      <screenshot>resources/screenshot-02.jpg</screenshot>
-      <screenshot>resources/screenshot-03.jpg</screenshot>
-      <screenshot>resources/screenshot-04.jpg</screenshot>
-      <screenshot>resources/screenshot-05.jpg</screenshot>
-    </assets>
- -->
+		<assets>
+			<icon>resources/icon.png</icon>
+		</assets>
   </extension>
 </addon>
