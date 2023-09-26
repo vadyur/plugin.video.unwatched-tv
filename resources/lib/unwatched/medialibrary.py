@@ -242,7 +242,6 @@ class Unwatched(object):
                     "label": episode["name"],
                     "title": episode["name"],
                     "rating": episode["vote_average"],
-                    "runtime": episode["runtime"],
                     "season": season_number,
                     "episode": episode["episode_number"],
                     "showtitle": tvshow.label,

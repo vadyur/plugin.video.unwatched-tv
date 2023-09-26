@@ -1,6 +1,6 @@
 import sys
 from vdlib.scrappers.movieapi import TMDB_Episode
-import xbmcplugin, xbmcgui
+import xbmcplugin, xbmcgui, xbmc
 from simpleplugin import Plugin
 
 from .unwatched.UnwatchedOpts import OptsTypes
@@ -45,13 +45,8 @@ def root(params):
 # @plugin.mem_cached(30)
 def listing_tvshow(type: OptsTypes, uw: Unwatched, opts: TVShowOpts = TVShowOpts.ALL):
     context_menu = [OptsTypes.WISH, OptsTypes.JUNK]
-    progressDlg = xbmcgui.DialogProgressBG()
-    progressDlg.create(plugin.name)
 
-    def update(label: str):
-        progressDlg.update(message=label)
-
-    listing = list(uw.getTVShowListing(type, opts, progressFn=update))
+    listing = list(uw.getTVShowListing(type, opts))
     for item in listing:
         tvshowid = int(item["url"])
         item["url"] = plugin.get_url(action="seasons", tvshowid=tvshowid)
@@ -100,8 +95,10 @@ def moveto(params):
 
     if params["target"] == "OptsTypes.WISH":
         unwatched_opts.move_to_wish(int(params["tvshowid"]))
+        xbmc.executebuiltin('Container.Refresh')
     if params["target"] == "OptsTypes.JUNK":
         unwatched_opts.move_to_junk(int(params["tvshowid"]))
+        xbmc.executebuiltin('Container.Refresh')
 
 
 @plugin.action()
@@ -111,8 +108,10 @@ def removefrom(params):
 
     if params["target"] == "OptsTypes.WISH":
         unwatched_opts.remove_from_wish(int(params["tvshowid"]))
+        xbmc.executebuiltin('Container.Refresh')
     if params["target"] == "OptsTypes.JUNK":
         unwatched_opts.remove_from_junk(int(params["tvshowid"]))
+        xbmc.executebuiltin('Container.Refresh')
 
 
 @plugin.action()
