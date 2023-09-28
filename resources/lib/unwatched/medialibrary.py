@@ -155,6 +155,8 @@ class Unwatched(object):
         def tvshowListItem(tvshow: TVShowItem):
             video_info = get_tvshow_details(tvshow.tvshowid)
             video_info["playcount"] = int(tvshow.watched)
+            video_info["mediatype"] = "tvshow"
+            video_info["dbid"] = tvshow.tvshowid
 
             default_icon = "image://DefaultFolder.png/"
             icon = default_icon
@@ -212,6 +214,7 @@ class Unwatched(object):
                         "video": {
                             "playcount": int(season.watched),
                             "plot": season.overview,
+                            "mediatype": "season"
                         }
                     },
                     "art": art,
@@ -231,7 +234,7 @@ class Unwatched(object):
                     "icon": thumb,
                     "thumb": thumb,
                     "landscape": thumb,
-                    "poster": thumb
+                    #"poster": thumb
                 })
 
                 video_info = show_video_info.copy()
@@ -247,6 +250,7 @@ class Unwatched(object):
                     "showtitle": tvshow.label,
                     #"cast",
                     "tvshowid": tvshowid,
+                    "mediatype": "episode",
                 })
                 yield {
                     "label": episode["name"],
