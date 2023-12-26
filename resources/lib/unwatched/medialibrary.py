@@ -18,7 +18,9 @@ def get_tvshow_from_tmdb(tmdb_id: str) -> TMDB_API:
 
 
 def get_episodes_from_tmdb(tmdb_id: str, season_number: int):
-    tmdb = TMDB_API(tmdb_id=tmdb_id, type="tv", append_to_response=f"season/{season_number}")
+    tmdb = TMDB_API(
+        tmdb_id=tmdb_id, type="tv", append_to_response=f"season/{season_number}"
+    )
     return tmdb.episodes(season_number)
 
 
@@ -58,6 +60,10 @@ def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
     return result.get("tvshowdetails", {})
 
 
+def get_poster(art: Dict) -> str:
+    return art.get("poster", art.get("tvshow.poster", ""))
+
+
 def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
     result = VideoLibrary.GetSeasons(
         tvshowid=tvshow_id,
@@ -70,7 +76,7 @@ def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
             season_number=season["season"],
             watched_count=season["watchedepisodes"],
             seasonid=season["seasonid"],
-            poster=season["art"]["poster"],
+            poster=get_poster(season["art"]),
         )
 
 
@@ -150,7 +156,7 @@ class Unwatched(object):
         self,
         type: OptsTypes = OptsTypes.ALL,
         opts: TVShowOpts = TVShowOpts.ALL,
-        progressFn: Optional[Callable] = None
+        progressFn: Optional[Callable] = None,
     ) -> Iterable[dict]:
         def tvshowListItem(tvshow: TVShowItem):
             video_info = get_tvshow_details(tvshow.tvshowid)
@@ -167,7 +173,7 @@ class Unwatched(object):
                 icon = tvshow.art.get("poster", default_icon)
                 tvshow.art["icon"] = icon
 
-            if (progressFn):
+            if progressFn:
                 progressFn(tvshow.label)
 
             return {
@@ -182,23 +188,29 @@ class Unwatched(object):
         watchingIds = set()
         if opts == TVShowOpts.SUGGESTIONS:
             for tvshow in self.tvshows:
-                if self.opts.is_in_junk(tvshow.tvshowid): continue
-                if not tvshow.watching:                   continue
+                if self.opts.is_in_junk(tvshow.tvshowid):
+                    continue
+                if not tvshow.watching:
+                    continue
 
                 watchingIds.add(tvshow.tvshowid)
                 yield tvshowListItem(tvshow)
 
         for tvshow in self.tvshows:
-            if tvshow.tvshowid in watchingIds:                                          continue
-            if type == OptsTypes.WISH and not self.opts.is_in_wish(tvshow.tvshowid):    continue
-            if type == OptsTypes.JUNK and not self.opts.is_in_junk(tvshow.tvshowid):    continue
-            if type != OptsTypes.JUNK and self.opts.is_in_junk(tvshow.tvshowid):        continue
+            if tvshow.tvshowid in watchingIds:
+                continue
+            if type == OptsTypes.WISH and not self.opts.is_in_wish(tvshow.tvshowid):
+                continue
+            if type == OptsTypes.JUNK and not self.opts.is_in_junk(tvshow.tvshowid):
+                continue
+            if type != OptsTypes.JUNK and self.opts.is_in_junk(tvshow.tvshowid):
+                continue
 
             self.process_tmdb(tvshow)
-            if opts == TVShowOpts.SUGGESTIONS and tvshow.watched:                       continue
+            if opts == TVShowOpts.SUGGESTIONS and tvshow.watched:
+                continue
 
             yield tvshowListItem(tvshow)
-
 
     def getSeasonsListing(self, tvshowid: int) -> Iterable[dict]:
         tvshow = self.find_tvshow(tvshowid)
@@ -214,7 +226,7 @@ class Unwatched(object):
                         "video": {
                             "playcount": int(season.watched),
                             "plot": season.overview,
-                            "mediatype": "season"
+                            "mediatype": "season",
                         }
                     },
                     "art": art,
@@ -230,40 +242,43 @@ class Unwatched(object):
             for episode in episodes:
                 art = tvshow.art.copy()
                 thumb = f"https://image.tmdb.org/t/p/w780{episode['still_path']}"
-                art.update({
-                    "icon": thumb,
-                    "thumb": thumb,
-                    "landscape": thumb,
-                    #"poster": thumb
-                })
+                art.update(
+                    {
+                        "icon": thumb,
+                        "thumb": thumb,
+                        "landscape": thumb,
+                        # "poster": thumb
+                    }
+                )
 
                 video_info = show_video_info.copy()
-                video_info.update({
-                    "file": "",
-                    "plot": episode["overview"],
-                    "firstaired": episode["air_date"],
-                    "label": episode["name"],
-                    "title": episode["name"],
-                    "rating": episode["vote_average"],
-                    "season": season_number,
-                    "episode": episode["episode_number"],
-                    "showtitle": tvshow.label,
-                    #"cast",
-                    "tvshowid": tvshowid,
-                    "mediatype": "episode",
-                })
+                video_info.update(
+                    {
+                        "file": "",
+                        "plot": episode["overview"],
+                        "firstaired": episode["air_date"],
+                        "label": episode["name"],
+                        "title": episode["name"],
+                        "rating": episode["vote_average"],
+                        "season": season_number,
+                        "episode": episode["episode_number"],
+                        "showtitle": tvshow.label,
+                        # "cast",
+                        "tvshowid": tvshowid,
+                        "mediatype": "episode",
+                    }
+                )
+                stream_info = (
+                    {"video": {"duration": episode["runtime"] * 60}}
+                    if episode["runtime"]
+                    else {}
+                )
                 yield {
                     "label": episode["name"],
-                    "info": {
-                        "video": video_info
-                    },
+                    "info": {"video": video_info},
                     "art": art,
-                    'stream_info': {
-                        "video": {
-                            "duration": episode["runtime"] * 60
-                        }
-                    },
+                    "stream_info": stream_info,
                     "url": episode,
-                    'is_folder': False,
-                    'is_playable': True
+                    "is_folder": False,
+                    "is_playable": True,
                 }
