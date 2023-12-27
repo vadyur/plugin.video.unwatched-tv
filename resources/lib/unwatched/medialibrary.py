@@ -122,13 +122,9 @@ class Unwatched(object):
     def process_tmdb(self, tvshow: TVShowItem):
         tmdb_data: TMDB_API = get_tvshow_from_tmdb(tvshow.tmdb)
         seasons: Any = tmdb_data.tmdb_data["seasons"]
-        filtered_seasons = list(
-            filter(
-                lambda season: is_aired(season["air_date"])
-                and season["season_number"] != 0,
-                seasons,
-            )
-        )
+        def filterFn(season: Dict) -> bool:
+            return is_aired(season["air_date"]) and season["season_number"] != 0
+        filtered_seasons = list(filter(filterFn, seasons))
         if len(filtered_seasons) > len(tvshow.seasons):
             out_seasons: list[SeasonItem] = []
             for season in filtered_seasons:
