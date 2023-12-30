@@ -16,7 +16,7 @@
     <description lang="en">The plugin allows you to see which TV series from the media library have released new seasons/episodes.</description>
     <description lang="ru">Плагин позволяет узнать для каких сериалов из медиатеки вышли новые сезоны/серии</description>
     <language>en, ru</language>
-    <website>https://vadyur.gitlab.io/plugins-by-vd</website>
+    <website>https://vd-plugins.info</website>
     <source>https://github.com/vadyur/plugin.video.unwatched-tv</source>
     <assets>
       <icon>resources/icon.png</icon>
