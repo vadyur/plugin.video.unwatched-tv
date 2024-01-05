@@ -1,7 +1,7 @@
 import sys
 from vdlib.scrappers.movieapi import TMDB_Episode
 import xbmcplugin, xbmcgui, xbmc
-from simpleplugin import Plugin
+from simpleplugin import Plugin, SimplePluginError
 
 from .unwatched.UnwatchedOpts import OptsTypes
 from .unwatched.medialibrary import TVShowOpts, Unwatched, UnwatchedOpts
@@ -12,7 +12,14 @@ from vdlib.util.log import debug
 
 plugin = Plugin()
 unwatched_opts = UnwatchedOpts()
-_ = plugin.initialize_gettext()
+
+translate = plugin.initialize_gettext()
+
+def _(ui_string: str):
+    try:
+        return translate(ui_string)
+    except SimplePluginError:
+        return ui_string
 
 debug("=============== enter ================")
 
