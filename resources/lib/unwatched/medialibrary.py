@@ -2,7 +2,9 @@ from datetime import datetime as dt
 from enum import Enum
 import time
 
-from typing import Any, Callable, Dict, Iterable, List, Optional  # , Protocol
+from typing import Any, Callable, Dict, Iterable, List, Optional
+
+from vdlib.torrspy.detect import update_video_info_from_tmdb
 
 from .SeasonItem import SeasonItem
 from .TVShowItem import TVShowItem
@@ -24,18 +26,41 @@ def get_episodes_from_tmdb(tmdb_id: str, season_number: int):
     return tmdb.episodes(season_number)
 
 
+def update_tvshow_in_video_library(show: Dict[str, Any]):
+    tmdb = show.get("uniqueid", {}).get("tmdb", "")
+    if tmdb:
+        params = { key: show[key] for key in ["tvshowid", "uniqueid"] }
+        VideoLibrary.SetTVShowDetails(**params)
+
+
+def update_video_info_if_need(show: Dict[str, Any]):
+    if "uniqueid" not in show:
+        update_video_info_from_tmdb(show)
+        update_tvshow_in_video_library(show)
+
+
 def get_tvshows() -> Iterable[TVShowItem]:
-    result = VideoLibrary.GetTVShows(properties=["imdbnumber", "uniqueid", "art"])
+    result = VideoLibrary.GetTVShows(
+        properties=[
+            "imdbnumber",
+            "uniqueid",
+            "art",
+            "title",
+            "year",
+            "originaltitle"])
+
     for show in result["tvshows"]:
-        uniqueid: dict[str, str] = show["uniqueid"]
-        yield TVShowItem(
-            label=show["label"],
-            tvshowid=show["tvshowid"],
-            imdb=uniqueid["imdb"],
-            tmdb=uniqueid["tmdb"],
-            tvdb=uniqueid["tvdb"],
-            art=show["art"],
-        )
+        update_video_info_if_need(show)
+        uniqueid: Dict[str, str] = show.get("uniqueid", {})
+        tmdb = uniqueid.get("tmdb", "")
+        if tmdb:
+            yield TVShowItem(
+                label=show["label"],
+                tvshowid=show["tvshowid"],
+                imdb=uniqueid.get("imdb", ""),
+                tmdb=tmdb,
+                tvdb=uniqueid.get("tvdb", ""),
+                art=show["art"])
 
 
 def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
