@@ -13,12 +13,15 @@ from .UnwatchedOpts import OptsTypes, UnwatchedOpts
 from vdlib.kodi.jsonrpc_requests import VideoLibrary
 from vdlib.scrappers.movieapi import TMDB_API
 
+from vdlib.util.caching import cached, mem_cached
 
+@cached(duration=60)
 def get_tvshow_from_tmdb(tmdb_id: str) -> TMDB_API:
     tmdb = TMDB_API(tmdb_id=tmdb_id, type="tv", append_to_response="season")
     return tmdb
 
 
+@cached(duration=60)
 def get_episodes_from_tmdb(tmdb_id: str, season_number: int):
     tmdb = TMDB_API(
         tmdb_id=tmdb_id, type="tv", append_to_response=f"season/{season_number}"
@@ -40,19 +43,25 @@ def update_video_info_if_need(show: Dict[str, Any]):
 
 
 def get_tvshows() -> Iterable[TVShowItem]:
-    result = VideoLibrary.GetTVShows(
-        properties=[
-            "imdbnumber",
-            "uniqueid",
-            "art",
-            "title",
-            "year",
-            "originaltitle"])
+    @mem_cached(duration="10s")
+    def get_tvshows_cached():
+        return VideoLibrary.GetTVShows(
+            properties=[
+                "imdbnumber",
+                "uniqueid",
+                "art",
+                "title",
+                "year",
+                "originaltitle",
+                "watchedepisodes",
+                "episode"
+            ])
+    result = get_tvshows_cached()
 
     for show in result["tvshows"]:
-        update_video_info_if_need(show)
         uniqueid: Dict[str, str] = show.get("uniqueid", {})
         tmdb = uniqueid.get("tmdb", "")
+        update_video_info_if_need(show)
         if tmdb:
             yield TVShowItem(
                 label=show["label"],
@@ -60,9 +69,12 @@ def get_tvshows() -> Iterable[TVShowItem]:
                 imdb=uniqueid.get("imdb", ""),
                 tmdb=tmdb,
                 tvdb=uniqueid.get("tvdb", ""),
-                art=show["art"])
+                art=show["art"],
+                watched_episodes=show["watchedepisodes"],
+                episodes_count=show["episode"])
 
 
+@mem_cached(duration="10s")
 def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
     result: Any = VideoLibrary.GetTVShowDetails(
         tvshowid=tvshow_id,
@@ -85,15 +97,19 @@ def get_tvshow_details(tvshow_id: int) -> Dict[str, Any]:
     return result.get("tvshowdetails", {})
 
 
+@mem_cached(duration="10s")
 def get_poster(art: Dict) -> str:
     return art.get("poster", art.get("tvshow.poster", ""))
 
 
 def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
-    result = VideoLibrary.GetSeasons(
-        tvshowid=tvshow_id,
-        properties=["season", "watchedepisodes", "episode", "showtitle", "art"],
-    )
+    @mem_cached(duration="10s")
+    def get_seasons_cached():
+        return VideoLibrary.GetSeasons(
+            tvshowid=tvshow_id,
+            properties=["season", "watchedepisodes", "episode", "showtitle", "art"],
+        )
+    result = get_seasons_cached()
 
     for season in result["seasons"]:
         yield SeasonItem(
@@ -104,6 +120,19 @@ def get_seasons(tvshow_id: int) -> Iterable[SeasonItem]:
             poster=get_poster(season["art"]),
         )
 
+def get_episodes(tvshow_id: int, season_number: int):
+    result = VideoLibrary.GetEpisodes(
+        tvshowid=tvshow_id,
+        season=season_number,
+        properties=["title", "file", "episode"],
+    )
+    return result.get("episodes", [])
+
+def find_season(seasons, season_number: int) -> Optional[SeasonItem]:
+    return next((x for x in seasons if season_number == x.season_number), None)
+
+def find_episode(episodes: List[Dict[str, Any]], episode_number: int) -> Optional[Dict[str, Any]]:
+    return next((x for x in episodes if episode_number == x["episode"]), None)
 
 def strptime(string_date, format="%Y-%m-%d"):
     try:
@@ -126,52 +155,76 @@ class TVShowOpts(Enum):
     ALL = "all"
 
 
-class Unwatched(object):
-    def __init__(self, opts: UnwatchedOpts) -> None:
-        def init_seasons(tvshow: TVShowItem):
-            tvshow.seasons = list(get_seasons(tvshow.tvshowid))
+class TVShowItemTMDB(TVShowItem):
+    def __init__(self, tvshow: TVShowItem):
+        for key, value in tvshow.__dict__.items():
+            setattr(self, key, value)
 
-        def init_tvshows() -> List[TVShowItem]:
-            tvshows = list(get_tvshows())
-            for tvshow in tvshows:
-                init_seasons(tvshow)
-            return tvshows
+        self._seasons = None
+        self._source = tvshow
 
-        # init members
-        self.tvshows = init_tvshows()
-        self.opts = opts
+        self._tmdb_api = get_tvshow_from_tmdb(self.tmdb)
+        self.episodes_count = self.get_aired_episodes_count() #_tmdb_api.tmdb_data["number_of_episodes"]
 
-    def find_tvshow(self, tvshowid: int) -> Optional[TVShowItem]:
-        return next((x for x in self.tvshows if tvshowid == x.tvshowid), None)
+    def get_aired_episodes_count(self) -> int:
+        tmdb_data = self._tmdb_api.tmdb_data
+        last_aired_episode = tmdb_data["last_episode_to_air"]
+        result = 0
+        for season in tmdb_data["seasons"]:
+            if season["season_number"] == 0:
+                continue
+            if season["season_number"] == last_aired_episode["season_number"]:
+                result += last_aired_episode["episode_number"]
+                break
+            else:
+                result += season["episode_count"]
+        return result
 
-    def process_tmdb(self, tvshow: TVShowItem):
-        tmdb_data: TMDB_API = get_tvshow_from_tmdb(tvshow.tmdb)
-        seasons: Any = tmdb_data.tmdb_data["seasons"]
-        def filterFn(season: Dict) -> bool:
+    def merge_seasons(self, tmdb_seasons: List[SeasonItem]):
+        for season in tmdb_seasons:
+            library_season = self.find_season(season.season_number)
+            if library_season:
+                season.merge(library_season)
+
+        self._seasons = tmdb_seasons
+
+    def process_seasons(self):
+        seasons: Any = self._tmdb_api.tmdb_data["seasons"]
+        def filterAired(season: Dict) -> bool:
             return is_aired(season["air_date"]) and season["season_number"] != 0
-        filtered_seasons = list(filter(filterFn, seasons))
-        if len(filtered_seasons) > len(tvshow.seasons):
+        aired_seasons = filter(filterAired, seasons)
+        if isinstance(self._seasons, list):
             out_seasons: list[SeasonItem] = []
-            for season in filtered_seasons:
+            for season in aired_seasons:
                 poster_path = season["poster_path"]
                 out_seasons.append(
                     SeasonItem(
                         episode_count=season["episode_count"],
                         season_number=season["season_number"],
-                        watched_count=0,
                         overview=season["overview"],
                         poster=f"https://image.tmdb.org/t/p/original{poster_path}",
                     )
                 )
-            self.merge_seasons(tvshow, out_seasons)
+            self.merge_seasons(out_seasons)
 
-    def merge_seasons(self, tvshow: TVShowItem, tmdb_seasons: List[SeasonItem]):
-        for season in tmdb_seasons:
-            library_season = tvshow.find_season(season.season_number)
-            if library_season:
-                season.merge(library_season)
 
-        tvshow.seasons = tmdb_seasons
+    @property
+    def seasons(self) -> Iterable[SeasonItem]:
+        if self._seasons is None:
+            self._seasons = list(self._source.seasons)
+            self.process_seasons()
+        return self._seasons
+
+class Unwatched(object):
+    def __init__(self, opts: UnwatchedOpts) -> None:
+        self.opts = opts
+
+    @property
+    def tvshows(self) -> Iterable[TVShowItem]:
+        return get_tvshows()
+
+    def find_tvshow(self, tvshowid: int) -> Optional[TVShowItem]:
+        return next((x for x in self.tvshows if tvshowid == x.tvshowid), None)
 
     def getTVShowListing(
         self,
@@ -215,7 +268,7 @@ class Unwatched(object):
                     continue
 
                 watchingIds.add(tvshow.tvshowid)
-                yield tvshowListItem(tvshow)
+                yield tvshowListItem(TVShowItemTMDB(tvshow))
 
         for tvshow in self.tvshows:
             if tvshow.tvshowid in watchingIds:
@@ -226,19 +279,17 @@ class Unwatched(object):
                 continue
             if type != OptsTypes.JUNK and self.opts.is_in_junk(tvshow.tvshowid):
                 continue
-
-            self.process_tmdb(tvshow)
             if opts == TVShowOpts.SUGGESTIONS and tvshow.watched:
                 continue
 
-            yield tvshowListItem(tvshow)
+            yield tvshowListItem(TVShowItemTMDB(tvshow))
 
     def getSeasonsListing(self, tvshowid: int) -> Iterable[dict]:
         tvshow = self.find_tvshow(tvshowid)
         if tvshow:
-            self.process_tmdb(tvshow)
-            for season in tvshow.seasons:
-                art = tvshow.art.copy()
+            tvshow_tmdb = TVShowItemTMDB(tvshow)
+            for season in tvshow_tmdb.seasons:
+                art = tvshow_tmdb.art.copy()
                 if season.poster:
                     art.update({"poster": season.poster})
                 yield {

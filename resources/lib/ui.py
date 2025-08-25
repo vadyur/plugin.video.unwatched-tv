@@ -5,7 +5,7 @@ from simpleplugin import Plugin, SimplePluginError
 
 from .unwatched.UnwatchedOpts import OptsTypes
 from .unwatched.medialibrary import TVShowOpts, Unwatched, UnwatchedOpts
-from .unwatched.SeasonItem import SeasonItem
+from .unwatched.ui_impl import listing_episodes_impl, listing_seasons_impl
 
 from vdlib.kodi.simpleplugin3_suport import create_listing
 from vdlib.util.log import debug
@@ -144,21 +144,8 @@ def junk(params):
     xbmcplugin.setContent(int(sys.argv[1]), "tvshows")
     create_listing(listing_tvshow_junk())
 
-
-# @plugin.mem_cached(30)
 def listing_seasons(tvshowid: int):
-    uw = Unwatched(unwatched_opts)
-    debug(tvshowid)
-    listing = list(uw.getSeasonsListing(tvshowid))
-    for item in listing:
-        season: SeasonItem = item["url"]
-        seasonid = season.seasonid
-        if seasonid:
-            item["url"] = f"videodb://tvshows/titles/{tvshowid}/{season.season_number}/?tvshowid={tvshowid}"
-        else:
-            item["url"] = plugin.get_url(action="episodes", tvshowid=tvshowid, season_number=season.season_number)
-    return listing
-
+    return listing_seasons_impl(tvshowid, unwatched_opts, plugin.get_url)
 
 @plugin.action()
 def seasons(params):
@@ -168,17 +155,7 @@ def seasons(params):
 
 
 def listing_episodes(tvshowid: str, season_number: str, **kvargs):
-    debug(f"listing_episodes({tvshowid}, {season_number})")
-
-    # import vsdbg; vsdbg.breakpoint()
-
-    uw = Unwatched(unwatched_opts)
-    listing = list(uw.getEpisodesListing(int(tvshowid), int(season_number)))
-    debug(f"listing_episodes:\t{listing}")
-
-    for item in listing:
-        episode: TMDB_Episode = item["url"]
-        item["url"] = plugin.get_url(action="episode", season_number=season_number, episode_number=episode["episode_number"])
+    listing = listing_episodes_impl(int(tvshowid), int(season_number), unwatched_opts, plugin.get_url)
     return listing
 
 
