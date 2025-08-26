@@ -264,12 +264,11 @@ class Unwatched(object):
             for tvshow in self.tvshows:
                 if self.opts.is_in_junk(tvshow.tvshowid):
                     continue
-                tvshow_tmdb = TVShowItemTMDB(tvshow)
-                if not tvshow_tmdb.watching:
+                if not tvshow.watching:
                     continue
 
                 watchingIds.add(tvshow.tvshowid)
-                yield tvshowListItem(tvshow_tmdb)
+                yield tvshowListItem(TVShowItemTMDB(tvshow))
 
         for tvshow in self.tvshows:
             if tvshow.tvshowid in watchingIds:
