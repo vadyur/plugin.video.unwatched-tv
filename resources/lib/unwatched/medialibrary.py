@@ -232,7 +232,7 @@ class Unwatched(object):
         opts: TVShowOpts = TVShowOpts.ALL,
         progressFn: Optional[Callable] = None,
     ) -> Iterable[dict]:
-        def tvshowListItem(tvshow: TVShowItem):
+        def tvshowListItem(tvshow: TVShowItemTMDB):
             video_info = get_tvshow_details(tvshow.tvshowid)
             video_info["playcount"] = int(tvshow.watched)
             video_info["mediatype"] = "tvshow"
@@ -264,11 +264,12 @@ class Unwatched(object):
             for tvshow in self.tvshows:
                 if self.opts.is_in_junk(tvshow.tvshowid):
                     continue
-                if not tvshow.watching:
+                tvshow_tmdb = TVShowItemTMDB(tvshow)
+                if not tvshow_tmdb.watching:
                     continue
 
                 watchingIds.add(tvshow.tvshowid)
-                yield tvshowListItem(TVShowItemTMDB(tvshow))
+                yield tvshowListItem(tvshow_tmdb)
 
         for tvshow in self.tvshows:
             if tvshow.tvshowid in watchingIds:
@@ -279,10 +280,11 @@ class Unwatched(object):
                 continue
             if type != OptsTypes.JUNK and self.opts.is_in_junk(tvshow.tvshowid):
                 continue
-            if opts == TVShowOpts.SUGGESTIONS and tvshow.watched:
+            tvshow_tmdb = TVShowItemTMDB(tvshow)
+            if opts == TVShowOpts.SUGGESTIONS and tvshow_tmdb.watched:
                 continue
 
-            yield tvshowListItem(TVShowItemTMDB(tvshow))
+            yield tvshowListItem(tvshow_tmdb)
 
     def getSeasonsListing(self, tvshowid: int) -> Iterable[dict]:
         tvshow = self.find_tvshow(tvshowid)
