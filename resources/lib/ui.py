@@ -40,25 +40,25 @@ def root(params):
             "label": _("All"),
             "url": plugin.get_url(action="all"),
             "info": get_info(_("List of all TV shows from the media library, except those added to 'Junk'")),
-            "icon": f"{icons_dir}/all5.png"
+            "icon": f"{icons_dir}/all_meme_wbg.png"
         },
         {
             "label": _("Wish"),
             "url": plugin.get_url(action="wish"),
             "info": get_info(_("List of TV shows we would like to continue watching when new episodes are released (add/remove via the show's context menu)")),
-            "icon": f"{icons_dir}/wish3.png"
+            "icon": f"{icons_dir}/wish_meme_wbg.png"
         },
         {
             "label": _("Suggestions"),
             "url": plugin.get_url(action="suggestions"),
             "info": get_info(_("List of currently watched TV shows from the media library plus wished shows that have unseen seasons. This section is convenient to add to the home screen as a widget.")),
-            "icon": f"{icons_dir}/suggestions.png"
+            "icon": f"{icons_dir}/sug_meme_wbg.png"
         },
         {
             "label": _("Junk"),
             "url": plugin.get_url(action="junk"),
             "info": get_info(_("TV shows you no longer want to watch (add/remove via the show's context menu)")),
-            "icon": f"{icons_dir}/junk2.png"
+            "icon": f"{icons_dir}/junk_meme_wbg.png"
         }
     ]
     create_listing(listing)
