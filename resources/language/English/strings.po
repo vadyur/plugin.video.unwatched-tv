@@ -38,3 +38,19 @@ msgstr ""
 msgctxt "#33006"
 msgid "Episode S{}E{} isn't in media library"
 msgstr ""
+
+msgctxt "#33007"
+msgid "List of all TV shows from the media library, except those added to 'Junk'"
+msgstr ""
+
+msgctxt "#33008"
+msgid "List of TV shows we would like to continue watching when new episodes are released (add/remove via the show's context menu)"
+msgstr ""
+
+msgctxt "#33009"
+msgid "List of currently watched TV shows from the media library plus wished shows that have unseen seasons. This section is convenient to add to the home screen as a widget."
+msgstr ""
+
+msgctxt "#33010"
+msgid "TV shows you no longer want to watch (add/remove via the show's context menu)"
+msgstr ""

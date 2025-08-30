@@ -38,3 +38,20 @@ msgstr "Предложения"
 msgctxt "#33006"
 msgid "Episode S{}E{} isn't in media library"
 msgstr "Эпизод S{}E{} не в медиа библиотеке"
+
+msgctxt "#33007"
+msgid "List of all TV shows from the media library, except those added to 'Junk'"
+msgstr "Список всех сериалов из медиатеки, кроме добавленных в 'Больше не буду'"
+
+msgctxt "#33008"
+msgid "List of TV shows we would like to continue watching when new episodes are released (add/remove via the show's context menu)"
+msgstr "Список сериалов, которые мы хотим продолжать смотреть, когда выходят новые эпизоды (добавить/удалить через контекстное меню сериала)"
+
+msgctxt "#33009"
+msgid "List of currently watched TV shows from the media library plus wished shows that have unseen seasons. This section is convenient to add to the home screen as a widget."
+msgstr "Список просматриваемых сериалов из медиатеки плюс желаемые сериалы с непросмотренными сезонами. Этот раздел удобно добавить на главный экран в виде виджета."
+
+msgctxt "#33010"
+msgid "TV shows you no longer want to watch (add/remove via the show's context menu)"
+msgstr "Сериалы, которые вы больше не хотите смотреть (добавить/удалить через контекстное меню сериала)"
+

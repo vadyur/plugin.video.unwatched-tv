@@ -26,25 +26,40 @@ debug("=============== enter ================")
 
 @plugin.action()
 def root(params):
-    # import vsdbg; vsdbg.breakpoint()
+    icons_dir = "special://home/addons/plugin.video.unwatched-tv/resources/media/icons"
+
+    def get_info(plot: str):
+        return {
+            "video": {
+                "plot": plot
+            }
+        }
 
     listing = [
         {
             "label": _("All"),
             "url": plugin.get_url(action="all"),
+            "info": get_info(_("List of all TV shows from the media library, except those added to 'Junk'")),
+            "icon": f"{icons_dir}/all5.png"
         },
         {
             "label": _("Wish"),
             "url": plugin.get_url(action="wish"),
+            "info": get_info(_("List of TV shows we would like to continue watching when new episodes are released (add/remove via the show's context menu)")),
+            "icon": f"{icons_dir}/wish3.png"
         },
         {
             "label": _("Suggestions"),
             "url": plugin.get_url(action="suggestions"),
+            "info": get_info(_("List of currently watched TV shows from the media library plus wished shows that have unseen seasons. This section is convenient to add to the home screen as a widget.")),
+            "icon": f"{icons_dir}/suggestions.png"
         },
         {
             "label": _("Junk"),
             "url": plugin.get_url(action="junk"),
-        },
+            "info": get_info(_("TV shows you no longer want to watch (add/remove via the show's context menu)")),
+            "icon": f"{icons_dir}/junk2.png"
+        }
     ]
     create_listing(listing)
 
