@@ -168,6 +168,8 @@ class TVShowItemTMDB(TVShowItem):
 
     def get_aired_episodes_count(self) -> int:
         tmdb_data = self._tmdb_api.tmdb_data
+        if not tmdb_data or "last_episode_to_air" not in tmdb_data:
+            return 0
         last_aired_episode = tmdb_data["last_episode_to_air"]
         result = 0
         for season in tmdb_data["seasons"]:
